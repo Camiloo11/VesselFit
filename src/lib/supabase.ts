@@ -13,7 +13,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,
+    // En native persistimos con AsyncStorage; en web supabase-js usa localStorage
+    // por su cuenta y sabe no tocar `window` durante el render en servidor
+    storage: Platform.OS === 'web' ? undefined : AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
     // En web, Supabase debe leer el token de la URL al volver del login de Google
