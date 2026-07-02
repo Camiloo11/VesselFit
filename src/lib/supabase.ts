@@ -11,7 +11,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-if (new URL(supabaseUrl).pathname !== '/') {
+let projectUrl: URL;
+try {
+  projectUrl = new URL(supabaseUrl);
+} catch {
+  throw new Error(
+    `EXPO_PUBLIC_SUPABASE_URL no es una URL válida: "${supabaseUrl}". ` +
+      'En tu .env debe verse así: https://TU-PROYECTO.supabase.co ' +
+      '(con el https:// incluido, sin comillas y sin espacios).'
+  );
+}
+
+if (projectUrl.pathname !== '/') {
   throw new Error(
     'EXPO_PUBLIC_SUPABASE_URL debe ser la raíz del proyecto (https://TU-PROYECTO.supabase.co) ' +
       'sin ruta adicional: quita el /rest/v1 (o lo que haya después del .co) en tu .env.'
