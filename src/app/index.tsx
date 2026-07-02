@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 export default function Login() {
@@ -20,8 +21,8 @@ export default function Login() {
         <Pressable
           className="flex-row items-center justify-center gap-2 rounded-2xl bg-gold py-4 active:opacity-80"
           onPress={() => {
-            // TODO: autenticación con Google vía Supabase (próximo paso)
-            console.log('Continue with Google pressed');
+            // TODO: autenticación con Google vía Supabase; por ahora navega directo
+            router.push('/onboarding');
           }}
         >
           <Ionicons name="logo-google" size={20} color="#0C0A09" />
