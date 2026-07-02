@@ -9,11 +9,21 @@ export default function Login() {
   const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
-    // Al volver de Google (o si ya había sesión guardada), entra a la app
+    // Al volver de Google (o si ya había sesión guardada), entra a la app:
+    // usuarios con perfil van directo al Dashboard, nuevos van al Onboarding
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) router.replace('/onboarding');
+      if (!session) return;
+      // setTimeout evita un bloqueo conocido al llamar a supabase dentro de este callback
+      setTimeout(async () => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        router.replace(profile ? '/workout' : '/onboarding');
+      }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
