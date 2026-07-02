@@ -1,5 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+
+import { supabase } from '@/lib/supabase';
 
 const EXERCISES = [
   { name: 'Bench Press', muscles: 'Chest, Triceps', sets: '3 x 10', icon: 'barbell' },
@@ -15,6 +18,16 @@ function getGreeting() {
 }
 
 export default function Workout() {
+  const [firstName, setFirstName] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const fullName: string | undefined =
+        data.user?.user_metadata?.full_name ?? data.user?.user_metadata?.name;
+      if (fullName) setFirstName(fullName.split(' ')[0]);
+    });
+  }, []);
+
   const today = new Date()
     .toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
     .toUpperCase();
@@ -33,8 +46,9 @@ export default function Workout() {
 
       {/* Saludo */}
       <Text className="mt-8 text-sm font-semibold tracking-widest text-cream/50">{today}</Text>
-      {/* TODO: nombre real del usuario desde Supabase */}
-      <Text className="mt-1 text-3xl font-bold text-cream">{getGreeting()}, John.</Text>
+      <Text className="mt-1 text-3xl font-bold text-cream">
+        {getGreeting()}, {firstName ?? 'friend'}.
+      </Text>
 
       {/* Daily Focus */}
       <View className="mt-6 rounded-3xl border-t-2 border-gold bg-surface p-5">

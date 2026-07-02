@@ -1,7 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+
+import { supabase } from '@/lib/supabase';
+
+// Alert.alert no hace nada en web; ahí usamos el alert del navegador
+function notify(title: string, message: string) {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+}
+
+function toNumber(value: string) {
+  const n = parseFloat(value.replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
 
 const EXPERIENCE_LEVELS = [
   { id: 'beginner', title: 'Beginner', subtitle: 'Building the foundation' },
@@ -48,9 +64,43 @@ export default function Onboarding() {
   const [experience, setExperience] = useState<string>('intermediate');
   const [days, setDays] = useState<boolean[]>([true, false, true, false, true, false, false]);
   const [goal, setGoal] = useState<string>('maintain');
+  const [saving, setSaving] = useState(false);
 
   const toggleDay = (index: number) =>
     setDays((prev) => prev.map((d, i) => (i === index ? !d : d)));
+
+  const generatePath = async () => {
+    setSaving(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setSaving(false);
+      notify('Sesión expirada', 'Vuelve a iniciar sesión con Google.');
+      router.replace('/');
+      return;
+    }
+
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      full_name: user.user_metadata?.full_name ?? null,
+      weight_lbs: toNumber(weight),
+      height_ft: toNumber(heightFt),
+      height_in: toNumber(heightIn),
+      experience,
+      training_days: days,
+      nutrition_goal: goal,
+      updated_at: new Date().toISOString(),
+    });
+    setSaving(false);
+
+    if (error) {
+      notify('No se pudo guardar tu perfil', error.message);
+      return;
+    }
+    router.push('/paywall');
+  };
 
   return (
     <ScrollView
@@ -160,14 +210,13 @@ export default function Onboarding() {
 
       {/* Generate My Path */}
       <Pressable
-        onPress={() => {
-          // TODO: guardar el perfil en Supabase antes de navegar
-          console.log({ weight, heightFt, heightIn, experience, days, goal });
-          router.push('/paywall');
-        }}
-        className="mt-8 flex-row items-center justify-center gap-2 rounded-full bg-gold py-4 active:opacity-80"
+        onPress={generatePath}
+        disabled={saving}
+        className="mt-8 flex-row items-center justify-center gap-2 rounded-full bg-gold py-4 active:opacity-80 disabled:opacity-60"
       >
-        <Text className="text-lg font-bold text-background">Generate My Path</Text>
+        <Text className="text-lg font-bold text-background">
+          {saving ? 'Saving…' : 'Generate My Path'}
+        </Text>
         <Ionicons name="arrow-forward" size={20} color="#0C0A09" />
       </Pressable>
     </ScrollView>
