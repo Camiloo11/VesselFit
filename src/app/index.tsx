@@ -1,8 +1,40 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Platform, Pressable, Text, View } from 'react-native';
+
+import { supabase } from '@/lib/supabase';
 
 export default function Login() {
+  const [signingIn, setSigningIn] = useState(false);
+
+  useEffect(() => {
+    // Al volver de Google (o si ya había sesión guardada), entra a la app
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) router.replace('/onboarding');
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signInWithGoogle = async () => {
+    if (Platform.OS !== 'web') {
+      // TODO: flujo nativo con expo-web-browser cuando activemos Expo Go
+      Alert.alert('Por ahora', 'Prueba el login desde el navegador (tecla w).');
+      return;
+    }
+    setSigningIn(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) {
+      setSigningIn(false);
+      console.error('Error al iniciar sesión:', error.message);
+    }
+  };
+
   return (
     <View className="flex-1 items-center justify-center bg-background px-6">
       {/* Logo */}
@@ -19,15 +51,13 @@ export default function Login() {
       {/* Tarjeta de autenticación */}
       <View className="mt-12 w-full max-w-sm rounded-3xl border border-surface-light bg-surface/80 p-5">
         <Pressable
-          className="flex-row items-center justify-center gap-2 rounded-2xl bg-gold py-4 active:opacity-80"
-          onPress={() => {
-            // TODO: autenticación con Google vía Supabase; por ahora navega directo
-            router.push('/onboarding');
-          }}
+          className="flex-row items-center justify-center gap-2 rounded-2xl bg-gold py-4 active:opacity-80 disabled:opacity-60"
+          disabled={signingIn}
+          onPress={signInWithGoogle}
         >
           <Ionicons name="logo-google" size={20} color="#0C0A09" />
           <Text className="text-base font-semibold text-background">
-            Continue with Google
+            {signingIn ? 'Connecting…' : 'Continue with Google'}
           </Text>
         </Pressable>
 
