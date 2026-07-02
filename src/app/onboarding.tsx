@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -54,7 +55,7 @@ export default function Onboarding() {
   return (
     <ScrollView
       className="flex-1 bg-background"
-      contentContainerClassName="px-5 pb-12 pt-16"
+      contentContainerClassName="mx-auto w-full max-w-md px-5 pb-12 pt-16"
     >
       {/* Encabezado */}
       <Text className="text-center text-3xl font-bold text-gold">VesselFit</Text>
@@ -160,8 +161,9 @@ export default function Onboarding() {
       {/* Generate My Path */}
       <Pressable
         onPress={() => {
-          // TODO: guardar el perfil en Supabase y navegar al paywall
+          // TODO: guardar el perfil en Supabase antes de navegar
           console.log({ weight, heightFt, heightIn, experience, days, goal });
+          router.push('/paywall');
         }}
         className="mt-8 flex-row items-center justify-center gap-2 rounded-full bg-gold py-4 active:opacity-80"
       >
