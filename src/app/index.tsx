@@ -27,12 +27,7 @@ export default function Login() {
     setSigningIn(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-        // Los proyectos nuevos de Supabase exigen la apikey también en esta
-        // URL de navegación; la key publishable es pública por diseño
-        queryParams: { apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY! },
-      },
+      options: { redirectTo: window.location.origin },
     });
     if (error) {
       setSigningIn(false);

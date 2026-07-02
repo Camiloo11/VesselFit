@@ -11,6 +11,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+if (new URL(supabaseUrl).pathname !== '/') {
+  throw new Error(
+    'EXPO_PUBLIC_SUPABASE_URL debe ser la raíz del proyecto (https://TU-PROYECTO.supabase.co) ' +
+      'sin ruta adicional: quita el /rest/v1 (o lo que haya después del .co) en tu .env.'
+  );
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     // En native persistimos con AsyncStorage; en web supabase-js usa localStorage
