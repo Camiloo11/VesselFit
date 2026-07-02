@@ -80,8 +80,8 @@ export default function Paywall() {
 
         <Pressable
           onPress={() => {
-            // TODO: iniciar compra con RevenueCat
-            console.log('Start Free Trial pressed');
+            // TODO: iniciar compra con RevenueCat; por ahora entra directo a la app
+            router.replace('/workout');
           }}
           className="mt-5 flex-row items-center justify-center gap-2 rounded-2xl bg-gold py-4 active:opacity-80"
         >
